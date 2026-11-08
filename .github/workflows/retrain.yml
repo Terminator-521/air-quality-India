@@ -1,0 +1,29 @@
+# Daily at 02:30 IST: refresh data, retrain the models, rewrite public/data/*.json, redeploy.
+name: retrain-and-publish
+on:
+  schedule: [{ cron: "0 21 * * *" }]
+  workflow_dispatch:
+permissions: { contents: write }
+concurrency: { group: data-writes, cancel-in-progress: false }
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env: { HOOK: "${{ secrets.VERCEL_DEPLOY_HOOK }}" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python -m pipeline.ingest live
+      - run: python -m pipeline.build_dataset
+      - run: python -m pipeline.train
+      - run: python -m pipeline.export
+      - name: Commit results
+        run: |
+          git config user.name "hawa-bot"; git config user.email "hawa-bot@users.noreply.github.com"
+          git add data/live public/data
+          git diff --cached --quiet || (git commit -m "model: retrain $(date -u +%F)" && git pull --rebase && git push)
+      - name: Trigger Vercel deploy (optional)
+        if: ${{ env.HOOK != '' }}
+        run: curl -fsS -X POST "$HOOK"

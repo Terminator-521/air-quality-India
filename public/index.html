@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hawa – India air quality, now and next week</title>
+  <meta name="description" content="Live air quality for Indian cities, a 7-day AQI forecast with a likely range, pollutant breakdown and a year-by-year history.">
+  <meta name="theme-color" content="#E9EEEC">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2313222B'/%3E%3Crect x='6' y='16' width='4' height='10' fill='%231E9E6A'/%3E%3Crect x='12' y='11' width='4' height='15' fill='%23E2B01C'/%3E%3Crect x='18' y='7' width='4' height='19' fill='%23E27D2A'/%3E%3Crect x='24' y='12' width='3' height='14' fill='%23CF3D2E'/%3E%3C/svg%3E">
+  <link rel="preload" href="vendor/fonts/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="vendor/fonts/source-sans-3-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="mast">
+    <a class="brand" href="./" aria-label="Hawa home">
+      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><rect x="3" y="16" width="5" height="12" fill="var(--good)"/><rect x="10" y="11" width="5" height="17" fill="var(--mod)"/><rect x="17" y="6" width="5" height="22" fill="var(--poor)"/><rect x="24" y="12" width="5" height="16" fill="var(--vpoor)"/></svg>
+      <span>Hawa</span>
+    </a>
+    <form class="finder" role="search" onsubmit="return false">
+      <label for="q" class="sr">Search for a city or town in India</label>
+      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Search a city or town" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
+      <ul id="results" role="listbox" hidden></ul>
+    </form>
+    <button id="theme" class="icon-btn" type="button" aria-label="Switch between light and dark theme">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.5 0-1-.2-1.4A5.5 5.5 0 0 1 13.4 3.2 9 9 0 0 0 12 3z"/></svg>
+    </button>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="hero" aria-labelledby="city-name">
+      <div class="wrap">
+        <div class="hero-head">
+          <h1 id="city-name">Loading…</h1>
+          <p id="state" class="state"></p>
+        </div>
+        <p id="status" class="status" aria-live="polite"></p>
+        <p id="notice" class="notice" role="status" hidden></p>
+        <div class="sky-wrap">
+          <div id="sky-head" class="sky-head" aria-hidden="true"></div>
+          <ol id="sky" class="sky" aria-label="Latest AQI and seven-day forecast"></ol>
+          <ol id="sky-days" class="sky-days" aria-hidden="true"></ol>
+        </div>
+        <div class="hero-foot">
+          <p id="advice" class="advice"></p>
+          <p id="dominant" class="dominant"></p>
+        </div>
+        <details class="scale">
+          <summary>What the colours mean</summary>
+          <ul id="legend" class="legend"></ul>
+        </details>
+      </div>
+    </section>
+
+    <section class="sec" id="live" aria-labelledby="live-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 id="live-h">Live pollutants</h2>
+          <p id="live-meta" class="meta"></p>
+        </div>
+        <div id="tiles" class="tiles" aria-live="polite"></div>
+        <div class="chart-card">
+          <h3 id="outlook-h">Next five days: Open-Meteo model and our forecast</h3>
+          <div class="chart-box"><canvas id="outlook" role="img" aria-label="Line chart comparing the Open-Meteo model forecast with this site's forecast"></canvas></div>
+          <p id="outlook-note" class="meta"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec alt" id="forecast" aria-labelledby="fc-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 id="fc-h">Seven-day forecast</h2>
+          <p id="fc-meta" class="meta"></p>
+        </div>
+        <div class="chart-card">
+          <div class="chart-box tall"><canvas id="fcchart" role="img" aria-label="Last 45 days of AQI followed by the seven-day forecast with its likely range"></canvas></div>
+        </div>
+        <div class="table-wrap">
+          <table id="fctable"></table>
+        </div>
+        <div id="dom-card" class="dom-card" hidden></div>
+      </div>
+    </section>
+
+    <section class="sec" id="map" aria-labelledby="map-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 id="map-h">Across India</h2>
+          <p id="map-meta" class="meta"></p>
+        </div>
+        <div class="map-grid">
+          <div id="mapbox" class="mapbox" role="application" aria-label="Map of tracked cities coloured by AQI"></div>
+          <div>
+            <div class="seg" role="tablist" aria-label="Ranking order">
+              <button type="button" role="tab" aria-selected="true" data-sort="worst">Most polluted</button>
+              <button type="button" role="tab" aria-selected="false" data-sort="best">Cleanest</button>
+            </div>
+            <ol id="rank" class="rank"></ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec alt" id="year" aria-labelledby="yr-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2 id="yr-h">A year of air</h2>
+          <div id="years" class="seg" role="group" aria-label="Choose a year"></div>
+        </div>
+        <div id="cal-wrap" class="cal-wrap"><div id="cal" class="cal"></div></div>
+        <div id="year-summary" class="year-summary"></div>
+      </div>
+    </section>
+
+    <section class="sec" id="model" aria-labelledby="md-h">
+      <div class="wrap">
+        <div class="sec-head"><h2 id="md-h">Data and model</h2><p id="md-meta" class="meta"></p></div>
+        <div class="md-grid">
+          <div>
+            <h3>How the forecast is made</h3>
+            <ol class="flow">
+              <li><b>Collect.</b> A scheduled job pulls hourly pollutant readings for every tracked city from Open-Meteo every few hours and saves them to this site's data files.</li>
+              <li><b>Combine.</b> Those readings join official daily AQI from CPCB (2022–2025) and a Kaggle history for five metros (from 2018).</li>
+              <li><b>Learn.</b> A gradient-boosted model learns how AQI moves from the last three weeks, the season and the crop-burning period, once per forecast day.</li>
+              <li><b>Publish.</b> The forecast and its likely range are written to the files this page reads, and the site redeploys.</li>
+            </ol>
+            <p class="small" id="sources-note"></p>
+          </div>
+          <div>
+            <h3>How accurate is it?</h3>
+            <p class="small" id="acc-intro"></p>
+            <div class="table-wrap"><table id="acc"></table></div>
+          </div>
+        </div>
+        <p class="small fine">Hawa is a student project, not an official advisory. AQI here follows the CPCB National AQI. For health decisions, check the CPCB or your local authority.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <p>Data: <a href="https://open-meteo.com/en/docs/air-quality-api" rel="noopener">Open-Meteo Air Quality API</a> (CAMS), <a href="https://cpcb.nic.in/" rel="noopener">CPCB</a>, Kaggle India AQI datasets. Map © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" rel="noopener">CARTO</a>.</p>
+    </div>
+  </footer>
+
+  <script src="vendor/leaflet.js"></script>
+  <script src="vendor/chart.umd.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

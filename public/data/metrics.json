@@ -1,0 +1,57 @@
+{
+ "generated_at": "2026-11-08T14:42:57+00:00",
+ "model": "hgb-direct-v1",
+ "holdout": {
+  "start": "2026-08-09",
+  "end": "2026-11-07",
+  "days": 90
+ },
+ "aqi": [],
+ "dominant_pollutant": null,
+ "pollutants": {},
+ "data": [
+  {
+   "src": "hist",
+   "rows": 242595,
+   "cities": 291,
+   "start": "2018-01-01",
+   "end": "2025-04-30"
+  },
+  {
+   "src": "om",
+   "rows": 117,
+   "cities": 39,
+   "start": "2026-11-05",
+   "end": "2026-11-07"
+  }
+ ],
+ "training_rows_aqi": 279426,
+ "features": [
+  "lag0",
+  "lag1",
+  "lag2",
+  "lag3",
+  "lag4",
+  "lag5",
+  "lag6",
+  "lag13",
+  "lag20",
+  "m3",
+  "m7",
+  "m14",
+  "m30",
+  "sd7",
+  "d1",
+  "domcode_lag0",
+  "domcode_lag1",
+  "domcode_lag2",
+  "sin",
+  "cos",
+  "month",
+  "stubble",
+  "residue",
+  "src_om",
+  "base",
+  "cmean"
+ ]
+}
